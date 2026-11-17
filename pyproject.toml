@@ -1,0 +1,19 @@
+[project]
+name = "id2223"
+version = "0.1.0"
+description = "ID2223 Scalable Machine Learning and Deep Learning"
+requires-python = ">=3.11"
+dependencies = [
+    "ipykernel>=6.29",
+    "matplotlib>=3.9",
+    "notebook>=7.6.5",
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "torch>=2.4",
+    "torchvision>=0.19",
+    "tqdm>=4.66",
+]
+
+[tool.uv]
+package = false
