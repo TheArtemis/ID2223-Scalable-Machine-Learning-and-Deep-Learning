@@ -12,3 +12,10 @@ Le slide sono salvate nelle rispettive cartelle. Collegamenti originali su Canva
 - 12 novembre — [Hopsworks](https://canvas.kth.se/courses/65630/files/folder/slides?preview=11034176)
 - 16 novembre — [Understanding LLMs](https://canvas.kth.se/courses/65630/files/folder/slides?preview=11050433)
 - 17 novembre — [Using LLMs](https://canvas.kth.se/courses/65630/files/folder/slides?preview=11051036)
+
+## Esami precedenti
+
+La [cartella esami su Canvas](https://canvas.kth.se/courses/65630/files/folder/exam) contiene:
+
+- [Esame dell'8 gennaio 2026](../exams/id2223_exam.pdf)
+- [Esame di recupero del 9 aprile 2026](../exams/id2223_reexam.pdf)
