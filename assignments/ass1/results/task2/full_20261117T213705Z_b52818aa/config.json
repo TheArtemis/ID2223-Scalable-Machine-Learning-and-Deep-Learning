@@ -1,0 +1,40 @@
+{
+  "config": {
+    "mode": "full",
+    "seed": 2223,
+    "epochs": 20,
+    "batch_size": 64,
+    "learning_rate": 0.01,
+    "momentum": 0.9,
+    "weight_decay": 0.0,
+    "augmentation": false,
+    "precision": "float32"
+  },
+  "environment": {
+    "python": "3.12.13 (main, Apr 14 2026, 14:31:26) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.7.1+cu128",
+    "torchvision": "0.22.1+cu128",
+    "numpy": "2.5.4",
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+    "cuda_runtime": "12.8",
+    "cudnn": 90701,
+    "cudnn_deterministic": true
+  },
+  "normalization": {
+    "mean": [
+      0.49131782415917735,
+      0.4821799621289491,
+      0.44638928010961343
+    ],
+    "std": [
+      0.24700136949747817,
+      0.24340077634253668,
+      0.26154419981672744
+    ]
+  },
+  "train_size": 45000,
+  "validation_size": 5000,
+  "normalization_fit_size": 45000
+}

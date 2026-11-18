@@ -1,0 +1,14 @@
+[
+  {
+    "model": "AlexNet",
+    "best_epoch": 20,
+    "checkpoint_reload": "passed",
+    "val_accuracy": 0.841
+  },
+  {
+    "model": "ResNet18",
+    "best_epoch": 19,
+    "checkpoint_reload": "passed",
+    "val_accuracy": 0.8508
+  }
+]

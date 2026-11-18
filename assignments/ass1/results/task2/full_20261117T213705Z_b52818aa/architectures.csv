@@ -1,0 +1,3 @@
+model,parameters,trainable_parameters
+AlexNet,6976842,6976842
+ResNet18,11173962,11173962

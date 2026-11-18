@@ -1,0 +1,22 @@
+layer,type,output_shape,parameters
+network.0,Conv2d,"(2, 64, 32, 32)",1792
+network.1,ReLU,"(2, 64, 32, 32)",0
+network.2,MaxPool2d,"(2, 64, 16, 16)",0
+network.3,Conv2d,"(2, 192, 16, 16)",110784
+network.4,ReLU,"(2, 192, 16, 16)",0
+network.5,MaxPool2d,"(2, 192, 8, 8)",0
+network.6,Conv2d,"(2, 384, 8, 8)",663936
+network.7,ReLU,"(2, 384, 8, 8)",0
+network.8,Conv2d,"(2, 256, 8, 8)",884992
+network.9,ReLU,"(2, 256, 8, 8)",0
+network.10,Conv2d,"(2, 256, 8, 8)",590080
+network.11,ReLU,"(2, 256, 8, 8)",0
+network.12,MaxPool2d,"(2, 256, 4, 4)",0
+network.13,Flatten,"(2, 4096)",0
+network.14,Linear,"(2, 1024)",4195328
+network.15,ReLU,"(2, 1024)",0
+network.16,Dropout,"(2, 1024)",0
+network.17,Linear,"(2, 512)",524800
+network.18,ReLU,"(2, 512)",0
+network.19,Dropout,"(2, 512)",0
+network.20,Linear,"(2, 10)",5130
