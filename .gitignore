@@ -7,3 +7,17 @@ outputs/
 *.pt
 *.pth
 .DS_Store
+
+# Share only the two checkpoints used in Part 4.
+!/assignments/ass1/outputs/
+/assignments/ass1/outputs/*
+!/assignments/ass1/outputs/task2/
+/assignments/ass1/outputs/task2/*
+!/assignments/ass1/outputs/task2/full_20261120T105658Z_b3bb1ac1/
+/assignments/ass1/outputs/task2/full_20261120T105658Z_b3bb1ac1/*
+!/assignments/ass1/outputs/task2/full_20261120T105658Z_b3bb1ac1/AlexNet_best.pt
+!/assignments/ass1/outputs/task4/
+/assignments/ass1/outputs/task4/*
+!/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/
+/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/*
+!/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/AlexNet_augmented_best.pt
