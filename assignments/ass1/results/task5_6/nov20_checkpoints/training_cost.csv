@@ -1,0 +1,4 @@
+model,parameters,best_epoch,best_val_accuracy,wall_minutes
+AlexNet (Original),6976842,20,0.843,9.045159777783557
+AlexNet (Augmented),6976842,20,0.8728,9.28928223333399
+ResNet18,11173962,15,0.847,33.52390056179914
