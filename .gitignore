@@ -7,3 +7,4 @@ outputs/
 *.pt
 *.pth
 .DS_Store
+assignments/ass2/chroma/chroma.sqlite3
