@@ -21,3 +21,4 @@ outputs/
 !/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/
 /assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/*
 !/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/AlexNet_augmented_best.pt
+**/chroma/

@@ -17,5 +17,6 @@ Le slide sono salvate nelle rispettive cartelle. Collegamenti originali su Canva
 
 La [cartella esami su Canvas](https://canvas.kth.se/courses/65630/files/folder/exam) contiene:
 
-- [Esame dell'8 gennaio 2026](../exams/id2223_exam.pdf)
-- [Esame di recupero del 9 aprile 2026](../exams/id2223_reexam.pdf)
+- [Esame del 13 gennaio 2025 (soluzioni)](../exams/id2223-2025-01-13-solutions.pdf)
+- [Esame dell'8 gennaio 2026](../exams/id2223-2026-01-08.pdf)
+- [Esame di recupero del 9 aprile 2026](../exams/id2223-2026-04-09.pdf)

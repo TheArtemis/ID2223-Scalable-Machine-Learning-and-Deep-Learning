@@ -4,12 +4,15 @@ version = "0.1.0"
 description = "ID2223 Scalable Machine Learning and Deep Learning"
 requires-python = ">=3.11"
 dependencies = [
+    "chromadb>=1.5.9",
+    "datasets>=5.2.0",
     "ipykernel>=6.29",
     "matplotlib>=3.9",
     "notebook>=7.6.5",
     "numpy>=2.0",
     "pandas>=2.2",
     "scikit-learn>=1.5",
+    "sentence-transformers>=6.3.0",
     "torch>=2.4",
     "torchvision>=0.19",
     "tqdm>=4.66",
