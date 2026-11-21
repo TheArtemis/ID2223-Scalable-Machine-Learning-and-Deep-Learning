@@ -1,0 +1,15 @@
+model,condition,evaluation_seconds
+Original,clean,0.8932515000342391
+Original,noise_0.05,1.0153077919967473
+Original,noise_0.10,0.9843770830193534
+Original,rotation_10,1.0795556250377558
+Original,rotation_25,1.1301660420140252
+Original,blur_0.5,1.2668390829931013
+Original,blur_1.0,1.267072124988772
+Augmented,clean,0.843977167038247
+Augmented,noise_0.05,1.0083680000388995
+Augmented,noise_0.10,0.9904512080247514
+Augmented,rotation_10,1.0883220830000937
+Augmented,rotation_25,1.0877719999989495
+Augmented,blur_0.5,1.2599644160363823
+Augmented,blur_1.0,1.264786167012062

@@ -1,0 +1,2 @@
+name,group,model,smoke,epochs,dropout,width_mult,l2,parameters,best_epoch,best_val_accuracy,best_val_loss,trained_samples,wall_seconds,checkpoint
+AlexNet_augmented,robustness,AlexNet,False,20,0.5,1.0,0.0,6976842,20,0.8728,0.3737380779266357,900000,557.3569340000395,outputs/task4/20261120T141502Z_dd09daff/AlexNet_augmented_best.pt

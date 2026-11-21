@@ -8,7 +8,7 @@ outputs/
 *.pth
 .DS_Store
 
-# Share only the two checkpoints used in Part 4.
+# Share the Part 4 checkpoints and CSV evidence for Parts 5 and 6.
 !/assignments/ass1/outputs/
 /assignments/ass1/outputs/*
 !/assignments/ass1/outputs/task2/
@@ -16,9 +16,17 @@ outputs/
 !/assignments/ass1/outputs/task2/full_20261120T105658Z_b3bb1ac1/
 /assignments/ass1/outputs/task2/full_20261120T105658Z_b3bb1ac1/*
 !/assignments/ass1/outputs/task2/full_20261120T105658Z_b3bb1ac1/AlexNet_best.pt
+!/assignments/ass1/outputs/task2/full_20261120T105658Z_b3bb1ac1/AlexNet_history.csv
+!/assignments/ass1/outputs/task2/full_20261120T105658Z_b3bb1ac1/ResNet18_history.csv
+!/assignments/ass1/outputs/task2/full_20261120T105658Z_b3bb1ac1/comparison.csv
 !/assignments/ass1/outputs/task4/
 /assignments/ass1/outputs/task4/*
 !/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/
 /assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/*
 !/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/AlexNet_augmented_best.pt
+!/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/AlexNet_augmented_history.csv
+!/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/training_comparison.csv
+!/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/evaluation_costs.csv
+!/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/validation_predictions.csv
+!/assignments/ass1/outputs/task4/20261120T141502Z_dd09daff/validation_robustness.csv
 **/chroma/
