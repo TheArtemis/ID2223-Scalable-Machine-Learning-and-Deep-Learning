@@ -1,0 +1,7 @@
+{
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "torch": "2.7.1+cu128",
+  "cudnn_tf32": true,
+  "cuda_matmul_tf32": false
+}

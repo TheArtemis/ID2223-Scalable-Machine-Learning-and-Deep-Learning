@@ -13,7 +13,7 @@
 \graphicspath{{figures/}}
 \title{ID2223 Lab 1: Convolutional Neural Networks\\[0.5em]\large Group name: THE MEGA BEST GROUP}
 \author{Riccardo Fragale, Lorenzo Deflorian, Siyue Zhang}
-\date{23 November 2026}
+\date{24 November 2026}
 \begin{document}
 \maketitle
 
@@ -23,7 +23,7 @@ In this task we trained AlexNet and ResNet-18 on CIFAR-10 and compared their acc
 Each image in the dataset is a $32\times32$ RGB photo with one label from ten classes, such as airplane, cat, truck or others. The training set has 50,000 images, 5,000 per class. 
 We use a stratified split with seed 2223: 45,000 training and 5,000 validation images, so each class has 500 validation images. CIFAR-10 is balanced, so no class reweighting is needed. Stratification preserves this balance in training and validation.
 The fixed seed has been used to ensure reproducibility.
-The official 10,000 test images are kept for final evaluation(test).
+The official 10,000 test images are kept for final evaluation.
 
 Both models use the same preprocessing. Pixels are scaled to $[0,1]$ and normalized with the training split's channel means and standard deviations. Computing normalization statistics only from the training partition avoids data leakage.
 We keep the $32\times32$ size because both architectures are adapted to small images. We seed Python, NumPy, PyTorch and the training DataLoader, and use deterministic cuDNN settings on CUDA.
@@ -44,187 +44,126 @@ The baselines have no augmentation or weight decay.
 We saved the checkpoint with the highest validation accuracy and break ties with lower loss. 
 We decided a compute budget of 20 epochs, or 900,000 training examples ($45{,}000\times20$), for every run.
 
-\begin{table}[htbp]
-\centering
-\caption{Task 2 results from the November 18 Mac MPS run, at the selected epoch. Time covers all 20 epochs.}
-\label{tab:baseline}
-\begin{tabular}{lrr}
+\begin{table}[htbp]\centering\small
+\caption{Task 2 baselines on the RTX 3050 Ti. Training metrics are from the log at the selected epoch.}
+\begin{tabular}{lrrrrrr}
 \toprule
- & AlexNet & ResNet-18\\
+Model & M params & Epoch & Val. acc. & Val. loss & Train acc. & Min\\
 \midrule
-Parameters & 6,976,842 & 11,173,962\\
-Selected epoch & 17 & 18\\
-Validation accuracy (\%) & 83.84 & 85.74\\
-Validation loss & 0.880 & 0.677\\
-Training accuracy (\%) & 99.78 & 100.00\\
-Training time (min) & 4.95 & 12.94\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-In Table~\ref{tab:baseline}, ResNet gains 1.90 points in validation accuracy but takes about 2.6 times as long to train. Both models almost perfectly fit the training data, while their validation accuracy is 14 to 16 points lower. This gap shows overfitting.
+AlexNet & 6.98 & 20 & 84.10\% & 0.886 & 99.92\% & 6.44\\
+ResNet18 & 11.17 & 19 & 85.08\% & 0.720 & 100.00\% & 17.52\\
+\bottomrule\end{tabular}\end{table}
+ResNet-18 reached 85.08\% validation accuracy, compared with 84.10\% for AlexNet. It took 2.72 times as long. Each model saw 900,000 training examples in 20 epochs. Training accuracy in the table comes from the training log at the selected epoch.
 
 \section{Task 3: Capacity and regularization}
 We change one AlexNet setting at a time. The baseline uses width 1.0, dropout 0.5 and no weight decay. All runs keep the same split, seed, optimizer, batch size and 20-epoch budget, with no augmentation. The same baseline run is used in the width, L2 and dropout comparisons.
 
 These comparisons investigate whether changing capacity or regularization improves generalization within our training budget. Varying width measures the accuracy gained for extra parameters and training time, while L2 and dropout test whether we can reduce overfitting without enlarging the model. Changing one factor at a time helps attribute differences to that setting.
 
-\begin{table}[htbp]
-\centering\small
-\caption{Task 3 results reported in the notebook for the November 19 Mac MPS run. Metrics are at the selected checkpoint. Time covers all 20 epochs.}
-\label{tab:sweep}
-\begin{tabular}{lrrrrr}
+\begin{table}[htbp]\centering\small
+\caption{AlexNet sweep under the same 20-epoch budget. Train acc. comes from the training log at the selected epoch. Dropout is active during training for runs with a nonzero dropout rate.}
+\begin{tabular}{lrrrrrr}
 \toprule
-Setting & Params (M) & Val. (\%) & Val. loss & Train (\%) & Time (min)\\
+Model & M params & Epoch & Val. acc. & Val. loss & Train acc. & Min\\
 \midrule
-Baseline & 6.98 & 83.84 & 0.880 & 99.78 & 4.31\\
-Width 0.5 & 1.75 & 82.00 & 0.804 & 98.04 & 2.08\\
-Width 1.5 & 15.69 & 84.54 & 0.883 & 99.97 & 7.94\\
-L2 $10^{-4}$ & 6.98 & 84.12 & 0.785 & 99.47 & 4.40\\
-L2 $10^{-3}$ & 6.98 & 84.24 & 0.580 & 98.16 & 4.19\\
-Dropout 0 & 6.98 & 82.78 & 1.209 & 100.00 & 4.08\\
-Dropout 0.25 & 6.98 & 83.36 & 0.992 & 99.92 & 4.09\\
-\bottomrule
-\end{tabular}
-\end{table}
+baseline & 6.98 & 20 & 84.10\% & 0.886 & 99.92\% & 6.68\\
+w0.5 & 1.75 & 16 & 81.82\% & 0.797 & 97.38\% & 4.06\\
+w1.5 & 15.69 & 20 & 84.82\% & 0.900 & 99.96\% & 10.59\\
+l2 1e-4 & 6.98 & 18 & 83.72\% & 0.831 & 99.86\% & 6.60\\
+l2 1e-3 & 6.98 & 18 & 84.30\% & 0.577 & 98.16\% & 6.34\\
+dropout 0.0 & 6.98 & 19 & 82.50\% & 1.266 & 100.00\% & 6.21\\
+dropout 0.25 & 6.98 & 19 & 84.32\% & 0.968 & 99.98\% & 6.22\\
+\bottomrule\end{tabular}\end{table}
+At half width, training took 4.06 minutes and validation accuracy fell to 81.82\%. At 1.5 times the baseline width, accuracy rose by 0.72 points for about four extra minutes. At their selected checkpoints, all seven models classified at least 98.93\% of the clean training images correctly. Their training accuracy exceeded validation accuracy by 14.84 to 17.50 points. Even the narrow model fit the training data well.
 
-In Table~\ref{tab:sweep}, the smaller model roughly halves training time but loses 1.84 accuracy points. The wider model gains only 0.70 points and takes 7.94 minutes, using about 2.25 times as many parameters as the baseline. Even width 0.5 reaches 98\% training accuracy, so none of the settings clearly underfits. The notebook's learning curves show signs of overfitting for all three widths after roughly epoch 10: training loss approaches zero while validation loss rises. More capacity therefore provides a modest accuracy gain at a substantial cost without resolving overfitting.
+The baseline validation loss was lowest at epoch 11 and rose as training loss continued to fall. At the selected checkpoints, weight decay of 0.0001 lowered validation loss from 0.886 to 0.831 but also lowered accuracy from 84.10\% to 83.72\%. Weight decay of 0.001 gave the lowest validation loss (0.577). At epoch 20, this model reached 98.6\% training accuracy and 0.594 validation loss. At the same epoch, the model without dropout reached 100\% training accuracy and 1.267 validation loss.
 
-L2 at $10^{-3}$ lowers validation loss from 0.880 to 0.580 at about the same cost and keeps validation loss flatter late in training. Its slightly lower training accuracy of 98.16\%, together with improved validation performance, is consistent with effective regularization. Removing dropout gives the highest validation loss in the dropout comparison, even though training accuracy reaches 100\%; its validation loss rises to about 1.27 by epoch 20. Dropout 0.25 falls between no dropout and 0.5, supporting the use of head dropout under this budget.
+Dropout of 0.25 classified 11 more validation images correctly than dropout of 0.5, out of 5,000. We used one seed, so this small lead needs another run to establish whether it holds across seeds. The L2 and dropout comparisons took 6.21 to 6.68 minutes including the baseline. For context, the two baseline runs with the same settings took 6.44 and 6.68 minutes.
 
-All configurations reduce training loss sharply within 20 epochs, suggesting that overfitting is a bigger problem than stalled optimization. Among the tested single-factor changes, L2 at $10^{-3}$ offers the strongest validation-loss improvement and a modest accuracy gain at approximately the baseline's training cost. Width 1.5 gives the highest validation accuracy, but its extra cost makes regularization the more economical improvement in these runs.
-
+\begin{figure}[!htbp]\centering\includegraphics[width=0.93\linewidth]{task3_learning_curves.png}\caption{AlexNet training and validation loss (left) and accuracy (right) over 20 epochs. Each row changes one setting: width, weight decay or dropout. Solid lines show training and dashed lines show validation.}\end{figure}
+\clearpage
 \section{Task 4: Augmentation and robustness}
-We decided to use AlexNet for task 4 as generally data augmentation helps when the model is overfitting data in a normal training and AlexNet seemed the one having more this issue in the previous stages of the lab.
-We would like to add some ability to generalize to the model.
-We will call below the baseline AlexNet as\emph{Original} and the version trained with data augmentation \emph{Augmented}. Augmented uses random crops after four pixels of reflection padding, plus horizontal flips with probability 0.5. 
-These changes keep the objects still recognizable while varying their position in the grid(of 32 x 32 pixels) and left-right orientation. Validation images are not augmented.
+We trained Augmented with random 32 by 32 crops after four pixels of reflection padding, and horizontal flips with probability 0.5. A crop can shift an object within the frame, and a horizontal flip preserves its CIFAR-10 class. Both networks saw the same 5,000 validation images under each condition. Gaussian noise was fixed per image. Rotation used bilinear interpolation and black fill, and Gaussian blur used a 5 by 5 kernel. Noise, rotation and blur were applied separately before normalization.
 
-Both models are tested on the same 5,000 validation images. 
-We add Gaussian noise, rotate images or apply a $5\times5$ Gaussian blur, each at two strengths. 
-Each "corruption" is applied on its own to the $[0,1]$ pixels, before normalization. 
-The noise is fixed for each image, so both models see the same noisy images. Rotation uses bilinear interpolation and black fill.
-
-\begin{table}[htbp]
-\centering
-\caption{Validation accuracy on the same 5,000 images, evaluated on an RTX 3050 Ti GPU. A shared run gave 56.14\% for Original at $\sigma=0.10$; the notebook traces this one-image difference to cuDNN TF32.}
-\label{tab:robustness}
+\begin{table}[htbp]\centering\small
+\caption{Validation accuracy (\%) on clean and corrupted images.}
 \begin{tabular}{lrr}
 \toprule
-Condition & Original (\%) & Augmented (\%)\\
+Condition & Original & Augmented\\
 \midrule
-Clean & 84.30 & 87.28\\
-Noise, $\sigma=0.05$ & 78.48 & 77.10\\
-Noise, $\sigma=0.10$ & 56.16 & 46.44\\
-Rotation, $10^\circ$ & 66.48 & 74.00\\
-Rotation, $25^\circ$ & 40.14 & 50.02\\
-Blur, $\sigma=0.5$ & 81.38 & 84.38\\
-Blur, $\sigma=1.0$ & 53.58 & 53.24\\
-\bottomrule
-\end{tabular}
-\end{table}
+clean & 84.10 & 87.36\\
+noise 0.05 & 78.32 & 76.74\\
+noise 0.10 & 56.22 & 44.24\\
+rotation 10 & 66.54 & 73.50\\
+rotation 25 & 44.06 & 51.22\\
+blur 0.5 & 80.72 & 84.04\\
+blur 1.0 & 53.86 & 51.02\\
+\bottomrule\end{tabular}\end{table}
+Crop-and-flip training changed clean accuracy by +3.26 percentage points. At 25 degrees of rotation the change was +7.16 points, and at noise level 0.10 it was -11.98 points. The effect depends on the corruption.
 
-Augmentation helps on clean images, rotation and mild blur (Table~\ref{tab:robustness}). Under strong noise it loses 9.72 points. Strong blur gives similar results for both models.
 
-Noise and blur hide fine details, and rotation cuts off the corners of the image. Under strong noise, most wrong predictions are frog: 1,886 of 2,678 errors for Augmented and 1,323 of 2,192 for Original. Augmented predicts frog much more often, which explains most of its lower noise accuracy. Under rotation and strong blur, cat is the most common wrong prediction, at 44 to 60\% of errors.
+For strong noise, Augmented most often predicted frog on its errors (2,022 of 2,788) and Original most often predicted frog on its errors (1,258 of 2,189). Under rotation and strong blur, cat was the most common wrong prediction for both models. Original predicted cat on 1,211 of its 2,797 errors at 25 degrees and on 1,193 of its 2,307 errors under strong blur. Crop and flip leave pixel noise out of training, which may help explain the weaker results under strong noise. Rotation can cut an object off at the border, while blur and noise can hide details needed to identify the class.
 
-Augmented took 9.29 minutes to train and Original took 9.05 minutes. Augmentation added 14.65 seconds, about 2.7\%, for a 2.98-point gain on clean images. Given the small size of the model
-and the reduced time to train it we think it's an affordable time increase.
+
+Original trained in 6.44 minutes and Augmented in 8.23 minutes on the same GPU. The difference was +27.84\% in this run.
+
 
 \section{Task 5: Predictions and adversarial examples}
-In this task, we investigate what the models get right and wrong, and whether small, deliberately chosen pixel changes can alter their predictions. We compare Original and Augmented using class-level results, representative predictions and training curves, then generate adversarial examples against both models. This extends Task 4's corruption tests by distinguishing sensitivity to random changes from sensitivity to perturbations optimized to increase the model's loss.
+Original reached 84.10\% clean accuracy and Augmented reached 87.36\%. Their validation losses were 0.886 and 0.376. The least-recalled class for Original was cat (69.00\%). For example, it classified image 39 as deer with almost 100\% confidence.
 
-Augmented also lowers clean validation loss from 0.890 to 0.374. Cat has the lowest recall for both models. Its recall rises from 71.2\% to 73.2\%. Total cat/dog confusions fall from 116 to 109, though cat-to-dog errors increase from 59 to 66. Frog recall improves from 85.0\% to 91.0\%.
+\begin{figure}[htbp]\centering\includegraphics[width=0.75\linewidth]{prediction_examples_1.png}\caption{Original on its four lowest-recall classes. The top row shows correct predictions and the bottom row errors.}\end{figure}
+On clean inputs, the gap between training and validation accuracy was 15.88 points for Original and 5.52 for Augmented. Training accuracy in this check uses the saved weights with dropout off. The learning curves use training-mode accuracy during optimization.
 
-For Original's four lowest-recall classes, Figure~\ref{fig:examples} shows the first correct and the first wrong prediction. The notebook shows the same analysis for Augmented and both confusion matrices. Original labels cat image 39 as a deer with almost 100\% confidence. Confident errors like this receive a large cross-entropy penalty. This helps explain Original's high validation loss.
+Original had its lowest validation loss at epoch 11 and ended at 0.886. For Augmented the validation loss went from 0.407 at epoch 15 to 0.376 at epoch 20.
 
-\begin{figure}[!htb]
-\centering
-\includegraphics[width=0.78\linewidth]{prediction_examples_1.png}
-\caption{Original: correct predictions in the top row and errors in the bottom row.}
-\label{fig:examples}
-\end{figure}
+\begin{figure}[htbp]\centering\includegraphics[width=0.9\linewidth]{learning_curves_1.png}\caption{Training and validation curves for Original and Augmented.}\end{figure}
+FGSM used each model's own gradient on the first 256 validation images. We added 4/255 times the sign of the gradient to each pixel and clipped to [0,1]. The largest change was 0.0156863. Random signs of the same size caused far fewer errors. The success rate counts only images classified correctly before the attack.
 
-In clean evaluation mode, Original gets 99.98\% training accuracy and Augmented gets 92.67\%. Their training/validation gaps are 15.68 and 5.39 points, which supports reduced overfitting with augmentation. Augmented's training log reports 90.44\% at epoch 20. The log uses dropout, augmented images and changing weights. Its training accuracy is therefore not directly comparable to the clean evaluation.
-
-In Figure~\ref{fig:curves}, Original's validation loss rises from 0.590 at epoch 10 to 0.890 at epoch 20, while training loss falls. Validation accuracy still improves from 81.66\% to 84.30\%, so our accuracy rule selects epoch 20. Augmented's validation loss keeps falling, from 0.420 at epoch 15 to 0.374 at epoch 20. It may benefit from more training.
-
-\begin{figure}[!htb]
-\centering
-\includegraphics[width=0.95\linewidth]{learning_curves_1.png}
-\caption{Training and validation curves for the November 20 AlexNet runs. Training metrics use training mode; validation uses clean images in evaluation mode.}
-\label{fig:curves}
-\end{figure}
-
-We use a one-step FGSM attack with $\epsilon=4/255$. We take the sign of the loss gradient with respect to the raw pixels, add $\epsilon$ times that sign, and clip to $[0,1]$. Normalization stays inside the gradient calculation. The largest recorded pixel change is 0.0156863, which matches $4/255$ up to rounding.
-
-We attack the first 256 validation images using each model's own gradients. As a control, both models also receive the same random signs with the same size and clipping. An attack succeeds if a correct clean prediction becomes wrong.
-
-\begin{table}[htbp]
-\centering
-\caption{Results on the 256-image subset. Success rate uses only initially correct predictions.}
-\label{tab:attack}
+\begin{table}[htbp]\centering\small
+\caption{Clean, random-sign and adversarial accuracy on the same subset.}
 \begin{tabular}{lrrrr}
 \toprule
-Model & Clean (\%) & Random (\%) & FGSM (\%) & Success\\
+Model & Clean & Random & FGSM & Successful attacks\\
 \midrule
-Original & 89.06 & 88.28 & 26.56 & 160/228 (70.18\%)\\
-Augmented & 91.02 & 91.02 & 21.88 & 177/233 (75.97\%)\\
-\bottomrule
-\end{tabular}
-\end{table}
+Original & 85.55\% & 86.33\% & 26.56\% & 151/219 (68.95\%)\\
+Augmented & 91.80\% & 91.02\% & 25.78\% & 169/235 (71.91\%)\\
+\bottomrule\end{tabular}\end{table}
+\begin{figure}[htbp]\centering\includegraphics[width=0.8\linewidth]{fgsm_examples_1.png}\caption{First successful attack on Original. The last panel amplifies the pixel change.}\end{figure}
+On initially correct predictions the attack succeeded more often against Augmented (71.91\%) than Original (68.95\%). Crop-and-flip training improved clean validation accuracy, but gave no FGSM advantage on this subset. The first 256 validation images are a small, unstratified sample.
 
-FGSM causes many errors, while random signs have little effect (Table~\ref{tab:attack}). The control uses the same images and the same $\epsilon$, so the gap between the Random and FGSM columns shows the effect of following the gradient. Figure~\ref{fig:attack} shows Original changing its prediction from truck to automobile. The notebook also shows a truck-to-ship attack on Augmented. Crop-and-flip training did not improve resistance to FGSM in this test. The subset is small and not stratified, so these results do not measure general adversarial robustness.
-
-\begin{figure}[!htb]
-\centering
-\includegraphics[width=0.8\linewidth]{fgsm_examples_1.png}
-\caption{Original's first successful FGSM example. The final panel makes the small pixel changes visible by amplifying them.}
-\label{fig:attack}
-\end{figure}
-
+\clearpage
 \section{Task 6: Cost and model choice}
-The final task brings together accuracy, robustness and computational cost to recommend a configuration under our 20-epoch training budget. We compare the recorded training costs and benchmark inference for the available AlexNet checkpoints at batch sizes 1 and 64. These measurements help assess both the cost of training a model and its cost during use. We also consider how training duration, randomness and hardware limit the conclusions.
+For clean images we selected AlexNet augmented at epoch 20. It had the highest validation accuracy (87.36\%) among the configurations we trained. On the 10,000 official CIFAR-10 test images, it reached 87.13\% accuracy with cross-entropy 0.399. We evaluated the selected model on the official test set once, after model selection.
 
-We would choose Augmented for mostly clean or rotated images. It has the best validation accuracy in these runs (Table~\ref{tab:cost}) at a small extra training cost. Original is better under the tested Gaussian noise. ResNet takes about 3.7 times as long as Original for a 0.40-point gain. It had no augmentation, so its comparison with Augmented is not fully fair. In Task 3, L2 at $10^{-3}$ took about the same training time as the baseline. Width 1.5 took about 1.84 times as long for a 0.70-point gain.
-
-\begin{table}[!htb]
-\centering
-\caption{November 20 runs, each trained for 20 epochs. Validation accuracy is from the best checkpoint.}
-\label{tab:cost}
+\begin{table}[htbp]\centering\small
+\caption{Validation performance and elapsed training time. Each run includes validation after every epoch and saving the best checkpoints.}
 \begin{tabular}{lrrr}
 \toprule
-Model & Params (M) & Val. accuracy (\%) & Training (min)\\
+Model & M params & Val. acc. & Train (min)\\
 \midrule
-Original AlexNet & 6.98 & 84.30 & 9.05\\
-Augmented AlexNet & 6.98 & 87.28 & 9.29\\
-ResNet-18 & 11.17 & 84.70 & 33.52\\
-\bottomrule
-\end{tabular}
-\end{table}
+Original & 6.98 & 84.10\% & 6.44\\
+Augmented & 6.98 & 87.36\% & 8.23\\
+ResNet-18 & 11.17 & 85.08\% & 17.52\\
+\bottomrule\end{tabular}\end{table}
+We timed inference on an RTX 3050 Ti Laptop GPU using normalized float32 inputs with cuDNN TF32 allowed. Each of six trials had five warm-up passes and 20 timed passes with device synchronization. We excluded loading, preprocessing and transfers. The table reports medians and the 25th and 75th percentiles.
 
-Without the November 20 ResNet weights, we only measure inference and robustness for the two AlexNet models. We time inference on an RTX 3050 Ti Laptop GPU with float32 inputs and cuDNN TF32 enabled. For each model and batch size, we run six trials and alternate the model order. Each trial has five warm-up passes and 20 timed passes. We synchronize the GPU before and after timing. Times exclude loading, preprocessing, transfers and metric calculations.
-
-\begin{table}[htbp]
-\centering
-\caption{Median inference time per batch. IQR is the 25th to 75th percentile of the six trial means.}
-\label{tab:timing}
+\begin{table}[htbp]\centering\small
+\caption{Inference time per batch.}
 \begin{tabular}{lrrr}
 \toprule
-Model & Batch size & Median (ms) & IQR (ms)\\
+Model & Batch size & Median (ms) & Q1--Q3 (ms)\\
 \midrule
-Original & 1 & 2.60 & 2.57--2.81\\
-Augmented & 1 & 2.71 & 2.45--2.91\\
-Original & 64 & 4.78 & 4.77--4.96\\
-Augmented & 64 & 4.84 & 4.78--4.97\\
-\bottomrule
-\end{tabular}
-\end{table}
+Augmented & 1 & 0.98 & 0.97 to 1.00\\
+Original & 1 & 1.00 & 0.98 to 1.04\\
+ResNet18 & 1 & 3.60 & 3.37 to 3.90\\
+Augmented & 64 & 4.92 & 4.92 to 4.94\\
+Original & 64 & 4.94 & 4.91 to 4.95\\
+ResNet18 & 64 & 17.23 & 17.21 to 17.27\\
+\bottomrule\end{tabular}\end{table}
+For mostly clean or rotated images, we would use Augmented. It gained 3.26 validation points on clean images and 7.16 points at 25 degrees of rotation for 28\% more training time. At batch size 64, its median inference time was 4.92 ms, close to Original at 4.94 ms. Augmented also gained 3.32 points under mild blur. Original was the better choice for strong noise and strong blur, where Augmented lost 11.98 and 2.84 points. Augmented showed no advantage on our FGSM subset.
 
-Both AlexNet models have the same architecture and checkpoints of about 26.62 MiB. Their measured inference times are similar (Table~\ref{tab:timing}). Batch 64 processes about 13,000 images per second, compared with fewer than 400 at batch 1.
+ResNet-18 gained 0.98 clean validation points over Original for 2.72 times the training time and 3.49 times the batch-64 inference time. We only tested corruptions and FGSM on the two AlexNet checkpoints. In the width comparison, the wider AlexNet gained 0.72 points for 1.58 times the training time.
 
-ResNet beats AlexNet in both runs, but its gain falls from 1.90 points on November 18 to 0.40 points on November 20. AlexNet's training time rises from 4.95 to 9.05 minutes. Both runs use the same seed and split. These single-run results do not show variation across seeds.
-
-The training budget may also change the ranking. Augmented is still improving at epoch 20. ResNet peaks at 84.70\% at epoch 15 and ends at 84.46\%. Next, we would train ResNet with the same crop-and-flip augmentation for a fairer comparison. We would also test mild noise augmentation under the same budget.
+Augmented's validation loss was still falling at epoch 20, so a longer budget could change the ranking. We used one seed on one laptop GPU. The two baseline runs reached the same validation accuracy, but their training times differed by about 4\%. Training ResNet-18 with crop and flip would let us compare architectures under the same augmentation.
 
 \end{document}

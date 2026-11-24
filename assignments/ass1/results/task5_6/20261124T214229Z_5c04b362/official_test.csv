@@ -1,0 +1,2 @@
+model,checkpoint,epoch,val_accuracy,test_samples,test_loss,test_accuracy
+AlexNet_augmented,outputs\task4\20261124T214229Z_5c04b362\AlexNet_augmented_best.pt,20,0.8736,10000,0.3991942761898041,0.8713
