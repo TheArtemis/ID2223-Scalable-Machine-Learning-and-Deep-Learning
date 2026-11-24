@@ -11,25 +11,38 @@
 \widowpenalty=10000
 \captionsetup{font=small,labelfont=bf}
 \graphicspath{{figures/}}
-\title{ID2223 Lab 1: Convolutional Neural Networks}
-\author{}
+\title{ID2223 Lab 1: Convolutional Neural Networks\\[0.5em]\large Group name: THE MEGA BEST GROUP}
+\author{Riccardo Fragale, Lorenzo Deflorian, Siyue Zhang}
 \date{23 November 2026}
 \begin{document}
 \maketitle
 
-We trained AlexNet and ResNet-18 on CIFAR-10 and compared their accuracy, robustness and cost. Tasks 2 and 3 use Mac MPS runs from November 18 and 19. Tasks 4 to 6 use models trained on November 20. We do not mix numbers across runs. All comparisons use the validation set. Final test-set evaluation is still pending, and we did not attempt the optional challenges.
+In this task we trained AlexNet and ResNet-18 on CIFAR-10 and compared their accuracy, robustness and cost. We didn't attempt the optional challenges.
 
 \section{Task 1: Data preparation}
-Each example is a $32\times32$ RGB photo with one label from ten classes, such as airplane, cat or truck. The training set has 50,000 images, 5,000 per class. We use a stratified split with seed 2223: 45,000 training and 5,000 validation images, so each class has 500 validation images. The official 10,000 test images are kept for final evaluation.
+Each image in the dataset is a $32\times32$ RGB photo with one label from ten classes, such as airplane, cat, truck or others. The training set has 50,000 images, 5,000 per class. 
+We use a stratified split with seed 2223: 45,000 training and 5,000 validation images, so each class has 500 validation images. CIFAR-10 is balanced, so no class reweighting is needed. Stratification preserves this balance in training and validation.
+The fixed seed has been used to ensure reproducibility.
+The official 10,000 test images are kept for final evaluation(test).
 
-Both models use the same preprocessing. Pixels are scaled to $[0,1]$ and normalized with the training split's channel means and standard deviations. We keep the $32\times32$ size because both architectures are adapted to small images. We seed Python, NumPy, PyTorch and the training DataLoader, and use deterministic cuDNN settings on CUDA.
+Both models use the same preprocessing. Pixels are scaled to $[0,1]$ and normalized with the training split's channel means and standard deviations. Computing normalization statistics only from the training partition avoids data leakage.
+We keep the $32\times32$ size because both architectures are adapted to small images. We seed Python, NumPy, PyTorch and the training DataLoader, and use deterministic cuDNN settings on CUDA.
 
 \section{Task 2: Models and training}
-We build both models from PyTorch layers without pretrained weights. The original AlexNet was built for about $224\times224$ images and starts with an $11\times11$, stride-4 convolution. On $32\times32$ images this would shrink the feature maps too quickly, so we follow the Part A9 adaptation. Our AlexNet has five $3\times3$ convolutions with 64, 192, 384, 256 and 256 channels. Each uses stride 1, padding 1 and ReLU. Three max-pooling layers reduce the image size from 32 to 16, 8 and 4, so the last feature map is $256\times4\times4$. The classifier has sizes $4096\rightarrow1024\rightarrow512\rightarrow10$, with dropout 0.5 in its two hidden layers. It is smaller than the original classifier, and we leave out local response normalization.
+We build both models from PyTorch layers without pretrained weights. 
+The original AlexNet was built for about $224\times224$ images and starts with an $11\times11$, stride-4 convolution.
+On $32\times32$ images this would shrink the feature maps too quickly, so we follow the Part A9 adaptation. 
+Our AlexNet has five $3\times3$ convolutions with 64, 192, 384, 256 and 256 channels. Each uses stride 1, padding 1 and ReLU. 
+Three max-pooling layers reduce the image size from 32 to 16, 8 and 4, so the last feature map is $256\times4\times4$. 
+The classifier has sizes $4096\rightarrow1024\rightarrow512\rightarrow10$, with dropout 0.5 in its two hidden layers.
+It is smaller than the original classifier, and we leave out local response normalization.
 
 For the same reason, ResNet-18 starts with a $3\times3$ stride-1 convolution instead of the original $7\times7$ stride-2 convolution and max-pool. It has four stages of two residual blocks, with widths 64, 128, 256 and 512. The last three stages halve the spatial size, ending at $512\times4\times4$. Global average pooling and a linear layer give ten logits. Each block adds its input back through a shortcut, using a $1\times1$ convolution when the shapes differ. The shortcut gives gradients a direct path to earlier layers, which makes a deeper network easier to train. ResNet also differs from our AlexNet in width and batch normalization, so this comparison does not isolate the effect of the shortcuts.
 
-Both networks use cross-entropy and SGD with learning rate 0.01, momentum 0.9, cosine decay and batch size 64. The baselines have no augmentation or weight decay. We save the checkpoint with the highest validation accuracy and break ties with lower loss. Our compute budget is 20 epochs, or 900,000 training examples ($45{,}000\times20$), for every run.
+Both networks at training time use cross-entropy and SGD with learning rate 0.01, momentum 0.9, cosine decay and batch size 64. 
+The baselines have no augmentation or weight decay.
+We saved the checkpoint with the highest validation accuracy and break ties with lower loss. 
+We decided a compute budget of 20 epochs, or 900,000 training examples ($45{,}000\times20$), for every run.
 
 \begin{table}[htbp]
 \centering
@@ -54,6 +67,8 @@ In Table~\ref{tab:baseline}, ResNet gains 1.90 points in validation accuracy but
 \section{Task 3: Capacity and regularization}
 We change one AlexNet setting at a time. The baseline uses width 1.0, dropout 0.5 and no weight decay. All runs keep the same split, seed, optimizer, batch size and 20-epoch budget, with no augmentation. The same baseline run is used in the width, L2 and dropout comparisons.
 
+These comparisons investigate whether changing capacity or regularization improves generalization within our training budget. Varying width measures the accuracy gained for extra parameters and training time, while L2 and dropout test whether we can reduce overfitting without enlarging the model. Changing one factor at a time helps attribute differences to that setting.
+
 \begin{table}[htbp]
 \centering\small
 \caption{Task 3 results reported in the notebook for the November 19 Mac MPS run. Metrics are at the selected checkpoint. Time covers all 20 epochs.}
@@ -73,14 +88,22 @@ Dropout 0.25 & 6.98 & 83.36 & 0.992 & 99.92 & 4.09\\
 \end{tabular}
 \end{table}
 
-In Table~\ref{tab:sweep}, the smaller model roughly halves training time but loses 1.84 accuracy points. The wider model gains only 0.70 points and takes 7.94 minutes. Even width 0.5 reaches 98\% training accuracy, so none of the settings clearly underfits. More capacity helps a little, but the gap between training and validation accuracy stays large.
+In Table~\ref{tab:sweep}, the smaller model roughly halves training time but loses 1.84 accuracy points. The wider model gains only 0.70 points and takes 7.94 minutes, using about 2.25 times as many parameters as the baseline. Even width 0.5 reaches 98\% training accuracy, so none of the settings clearly underfits. The notebook's learning curves show signs of overfitting for all three widths after roughly epoch 10: training loss approaches zero while validation loss rises. More capacity therefore provides a modest accuracy gain at a substantial cost without resolving overfitting.
 
-L2 at $10^{-3}$ lowers validation loss from 0.880 to 0.580 at about the same cost. Removing dropout gives the highest validation loss, even though training accuracy reaches 100\%. Dropout 0.25 falls between no dropout and 0.5. These results suggest that overfitting is a bigger problem than failing to fit the training data.
+L2 at $10^{-3}$ lowers validation loss from 0.880 to 0.580 at about the same cost and keeps validation loss flatter late in training. Its slightly lower training accuracy of 98.16\%, together with improved validation performance, is consistent with effective regularization. Removing dropout gives the highest validation loss in the dropout comparison, even though training accuracy reaches 100\%; its validation loss rises to about 1.27 by epoch 20. Dropout 0.25 falls between no dropout and 0.5, supporting the use of head dropout under this budget.
+
+All configurations reduce training loss sharply within 20 epochs, suggesting that overfitting is a bigger problem than stalled optimization. Among the tested single-factor changes, L2 at $10^{-3}$ offers the strongest validation-loss improvement and a modest accuracy gain at approximately the baseline's training cost. Width 1.5 gives the highest validation accuracy, but its extra cost makes regularization the more economical improvement in these runs.
 
 \section{Task 4: Augmentation and robustness}
-We call the November 20 baseline AlexNet \emph{Original} and the version trained with augmentation \emph{Augmented}. Augmented uses random crops after four pixels of reflection padding, plus horizontal flips with probability 0.5. These changes keep the objects recognizable while varying their position and left-right orientation. Validation images are not randomly augmented.
+We decided to use AlexNet for task 4 as generally data augmentation helps when the model is overfitting data in a normal training and AlexNet seemed the one having more this issue in the previous stages of the lab.
+We would like to add some ability to generalize to the model.
+We will call below the baseline AlexNet as\emph{Original} and the version trained with data augmentation \emph{Augmented}. Augmented uses random crops after four pixels of reflection padding, plus horizontal flips with probability 0.5. 
+These changes keep the objects still recognizable while varying their position in the grid(of 32 x 32 pixels) and left-right orientation. Validation images are not augmented.
 
-Both models are tested on the same 5,000 validation images. We add Gaussian noise, rotate images or apply a $5\times5$ Gaussian blur, each at two strengths. Each corruption is applied on its own to the $[0,1]$ pixels, before normalization. The noise is fixed for each image, so both models see the same noisy images. Rotation uses bilinear interpolation and black fill.
+Both models are tested on the same 5,000 validation images. 
+We add Gaussian noise, rotate images or apply a $5\times5$ Gaussian blur, each at two strengths. 
+Each "corruption" is applied on its own to the $[0,1]$ pixels, before normalization. 
+The noise is fixed for each image, so both models see the same noisy images. Rotation uses bilinear interpolation and black fill.
 
 \begin{table}[htbp]
 \centering
@@ -105,9 +128,12 @@ Augmentation helps on clean images, rotation and mild blur (Table~\ref{tab:robus
 
 Noise and blur hide fine details, and rotation cuts off the corners of the image. Under strong noise, most wrong predictions are frog: 1,886 of 2,678 errors for Augmented and 1,323 of 2,192 for Original. Augmented predicts frog much more often, which explains most of its lower noise accuracy. Under rotation and strong blur, cat is the most common wrong prediction, at 44 to 60\% of errors.
 
-Augmented took 9.29 minutes to train and Original took 9.05 minutes. Augmentation added 14.65 seconds, about 2.7\%, for a 2.98-point gain on clean images.
+Augmented took 9.29 minutes to train and Original took 9.05 minutes. Augmentation added 14.65 seconds, about 2.7\%, for a 2.98-point gain on clean images. Given the small size of the model
+and the reduced time to train it we think it's an affordable time increase.
 
 \section{Task 5: Predictions and adversarial examples}
+In this task, we investigate what the models get right and wrong, and whether small, deliberately chosen pixel changes can alter their predictions. We compare Original and Augmented using class-level results, representative predictions and training curves, then generate adversarial examples against both models. This extends Task 4's corruption tests by distinguishing sensitivity to random changes from sensitivity to perturbations optimized to increase the model's loss.
+
 Augmented also lowers clean validation loss from 0.890 to 0.374. Cat has the lowest recall for both models. Its recall rises from 71.2\% to 73.2\%. Total cat/dog confusions fall from 116 to 109, though cat-to-dog errors increase from 59 to 66. Frog recall improves from 85.0\% to 91.0\%.
 
 For Original's four lowest-recall classes, Figure~\ref{fig:examples} shows the first correct and the first wrong prediction. The notebook shows the same analysis for Augmented and both confusion matrices. Original labels cat image 39 as a deer with almost 100\% confidence. Confident errors like this receive a large cross-entropy penalty. This helps explain Original's high validation loss.
@@ -158,6 +184,8 @@ FGSM causes many errors, while random signs have little effect (Table~\ref{tab:a
 \end{figure}
 
 \section{Task 6: Cost and model choice}
+The final task brings together accuracy, robustness and computational cost to recommend a configuration under our 20-epoch training budget. We compare the recorded training costs and benchmark inference for the available AlexNet checkpoints at batch sizes 1 and 64. These measurements help assess both the cost of training a model and its cost during use. We also consider how training duration, randomness and hardware limit the conclusions.
+
 We would choose Augmented for mostly clean or rotated images. It has the best validation accuracy in these runs (Table~\ref{tab:cost}) at a small extra training cost. Original is better under the tested Gaussian noise. ResNet takes about 3.7 times as long as Original for a 0.40-point gain. It had no augmentation, so its comparison with Augmented is not fully fair. In Task 3, L2 at $10^{-3}$ took about the same training time as the baseline. Width 1.5 took about 1.84 times as long for a 0.70-point gain.
 
 \begin{table}[!htb]
