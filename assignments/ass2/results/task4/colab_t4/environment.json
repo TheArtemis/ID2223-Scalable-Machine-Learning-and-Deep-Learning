@@ -1,0 +1,14 @@
+{
+  "device": "Tesla T4",
+  "reader": "Qwen/Qwen2.5-3B-Instruct",
+  "backend": "vllm",
+  "k": 10,
+  "packages": {
+    "torch": "2.14.0",
+    "vllm": "0.34.0",
+    "chromadb": "1.5.9",
+    "transformers": "5.22.1",
+    "sentence-transformers": "5.7.0",
+    "rank_bm25": "0.2.2"
+  }
+}
