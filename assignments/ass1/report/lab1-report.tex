@@ -114,6 +114,8 @@ Original reached 84.10\% clean accuracy and Augmented reached 87.36\%. Their val
 \begin{figure}[htbp]\centering\includegraphics[width=0.75\linewidth]{prediction_examples_1.png}\caption{Original on its four lowest-recall classes. The top row shows correct predictions and the bottom row errors.}\end{figure}
 On clean inputs, the gap between training and validation accuracy was 15.88 points for Original and 5.52 for Augmented. Training accuracy in this check uses the saved weights with dropout off. The learning curves use training-mode accuracy during optimization.
 
+ResNet-18 reached 85.08\% validation accuracy, with a loss of 0.720 and a macro F1 of 0.851. Its accuracy on clean training images was 100\%, giving a 14.92-point gap to validation. This suggests overfitting. Cat had the lowest recall at 72\%, and cats and dogs were often confused.
+
 Original had its lowest validation loss at epoch 11 and ended at 0.886. For Augmented the validation loss went from 0.407 at epoch 15 to 0.376 at epoch 20.
 
 \begin{figure}[htbp]\centering\includegraphics[width=0.9\linewidth]{learning_curves_1.png}\caption{Training and validation curves for Original and Augmented.}\end{figure}
@@ -131,7 +133,6 @@ Augmented & 91.80\% & 91.02\% & 25.78\% & 169/235 (71.91\%)\\
 \begin{figure}[htbp]\centering\includegraphics[width=0.8\linewidth]{fgsm_examples_1.png}\caption{First successful attack on Original. The last panel amplifies the pixel change.}\end{figure}
 On initially correct predictions the attack succeeded more often against Augmented (71.91\%) than Original (68.95\%). Crop-and-flip training improved clean validation accuracy, but gave no FGSM advantage on this subset. The first 256 validation images are a small, unstratified sample.
 
-\clearpage
 \section{Task 6: Cost and model choice}
 For clean images we selected AlexNet augmented at epoch 20. It had the highest validation accuracy (87.36\%) among the configurations we trained. On the 10,000 official CIFAR-10 test images, it reached 87.13\% accuracy with cross-entropy 0.399. We evaluated the selected model on the official test set once, after model selection.
 
