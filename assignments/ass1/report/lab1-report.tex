@@ -17,14 +17,19 @@
 \begin{document}
 \maketitle
 
-In this lab we trained AlexNet and ResNet-18 on CIFAR-10 and compared their clean validation accuracy and computational cost. Robustness experiments used the original and augmented AlexNet checkpoints. We didn't attempt the optional challenges. The notebook identifies the libraries used through import statements in the relevant code blocks.
+In this lab we trained AlexNet and ResNet-18 on CIFAR-10 and compared their accuracy and computational cost. 
+Robustness experiments used the original and augmented AlexNet checkpoints. 
+We decided to not attempt the optional challenges. 
+All the libraries used are mentioned in the notebook through import statements in the relevant code blocks.
 
-This report summarizes the main findings and conclusions. More detailed discussions and answers to the individual assignment questions are provided in the notebook's Markdown blocks, alongside the corresponding code and results.
+This report summarizes the main findings and conclusions. Detailed discussions and answers to the assignment questions are provided in the notebook's text blocks, with also code and results.
 
 \section{Task 1: Data preparation}
-Each image in the dataset is a $32\times32$ RGB photo with one label from ten classes, such as airplane, cat, truck or others. The training set has 50,000 images, 5,000 per class. 
-We use a stratified split with seed 2223: 45,000 training and 5,000 validation images, so each class has 500 validation images. CIFAR-10 is balanced, so no class reweighting is needed. Stratification preserves this balance in training and validation.
-The fixed seed has been used to ensure reproducibility.
+Each image in the dataset is a $32\times32$ RGB photo with one label from ten classes, such as airplane, cat, truck and others. The training set has 50,000 images of which exactly 5,000 per class. 
+We use a stratified split with seed 2223: 45,000 training and 5,000 validation images, so each class has 500 validation images. 
+CIFAR-10 is balanced, so no class reweighting was needed. 
+We used stratification to preserve this balance between classes in both training and validation.
+The fixed seed, instead, has been used to make the whole work reproducibile.
 The official 10,000 test images are kept for final evaluation.
 
 Both models use the same preprocessing. Pixels are scaled to $[0,1]$ and normalized with the training split's channel means and standard deviations. Computing normalization statistics only from the training partition avoids data leakage.
@@ -44,7 +49,7 @@ For the same reason, ResNet-18 starts with a $3\times3$ stride-1 convolution ins
 Both networks at training time use cross-entropy and SGD with learning rate 0.01, momentum 0.9, cosine decay and batch size 64. 
 The baselines have no augmentation or weight decay.
 We saved the checkpoint with the highest validation accuracy and break ties with lower loss. 
-We decided a compute budget of 20 epochs, or 900,000 training examples ($45{,}000\times20$), for every run.
+We decided a compute budget of 20 epochs, or 900,000 training examples ($45{,}000\times20$), for every run to have a decent training time.
 
 \begin{table}[htbp]\centering\small
 \caption{Task 2 baselines on the RTX 3050 Ti. Training metrics are from the log at the selected epoch.}
@@ -58,7 +63,10 @@ ResNet18 & 11.17 & 19 & 85.08\% & 0.720 & 100.00\% & 17.52\\
 ResNet-18 reached 85.08\% validation accuracy, compared with 84.10\% for AlexNet. It took 2.72 times as long. Each model saw 900,000 training examples in 20 epochs. Training accuracy in the table comes from the training log at the selected epoch.
 
 \section{Task 3: Capacity and regularization}
-We change one AlexNet setting at a time. The baseline uses width 1.0, dropout 0.5 and no weight decay. All runs keep the same split, seed, optimizer, batch size and 20-epoch budget, with no augmentation. The same baseline run is used in the width, L2 and dropout comparisons.
+We changed one AlexNet setting at a time. 
+The baseline uses width 1.0, dropout 0.5 and no weight decay. 
+All runs keep the same split, seed, optimizer, batch size and 20-epoch budget, with no data augmentation. 
+The same baseline run is used in the width, L2 and dropout comparisons.
 
 These comparisons investigate whether changing capacity or regularization improves generalization within our training budget. Varying width measures the accuracy gained for extra parameters and training time, while L2 and dropout test whether we can reduce overfitting without enlarging the model. Changing one factor at a time helps attribute differences to that setting.
 
@@ -85,11 +93,19 @@ Dropout of 0.25 classified 11 more validation images correctly than dropout of 0
 \begin{figure}[!htbp]\centering\includegraphics[width=0.93\linewidth]{task3_learning_curves.png}\caption{AlexNet training and validation loss (left) and accuracy (right) over 20 epochs. Each row changes one setting: width, weight decay or dropout. Solid lines show training and dashed lines show validation.}\end{figure}
 \clearpage
 \section{Task 4: Augmentation and robustness}
-Original and Augmented refer to two AlexNet training conditions throughout Tasks 4--6. Original is the Task 2 baseline without augmentation. Augmented was trained from scratch with the same architecture, split, seed, optimizer and 20-epoch budget, adding random crops and horizontal flips. ResNet-18 was evaluated on clean images and benchmarked for cost; corruption and adversarial experiments used only the two AlexNet checkpoints.
 
-We trained Augmented with random $32\times32$ crops after four pixels of reflection padding, and horizontal flips with probability 0.5. A crop can shift an object within the frame, and a horizontal flip preserves its CIFAR-10 class. Both AlexNet checkpoints saw the same 5,000 validation images under each evaluation condition.
+Original and Augmented will refer to two AlexNet training conditions throughout the following tasks.
+Original is the Task 2 baseline without augmentation. 
+Augmented was trained during task 4 from scratch with the same architecture, split, seed, optimizer and 20-epoch budget, adding random crops and horizontal flips. 
 
-Corruptions were applied separately before normalization, to pixels scaled to $[0,1]$. Noise 0.05 and 0.10 denote additive zero-mean Gaussian noise with standard deviations 0.05 and 0.10, followed by clipping to $[0,1]$. Each image's noise was fixed using seed $2223+\text{image ID}$. Rotation 10 and 25 denote fixed angles of $10^\circ$ and $25^\circ$, with bilinear interpolation, black fill and unchanged image dimensions. Blur 0.5 and 1.0 denote Gaussian standard deviations of 0.5 and 1.0 pixels, using a $5\times5$ kernel.
+ResNet-18, insteadm was evaluated on clean images and benchmarked for cost; corruption and adversarial experiments used only the two AlexNet checkpoints.
+
+We trained "Augmented" with random $32\times32$ crops after four pixels of reflection padding, and horizontal flips with probability 0.5. 
+A crop can shift an object within the frame, and a horizontal flip preserves its class. 
+Both AlexNet checkpoints saw the same 5,000 validation images under each evaluation condition.
+
+Image "Corruptions" were applied separately before normalization, to pixels scaled to $[0,1]$. 
+Noise 0.05 and 0.10 denote additive zero-mean Gaussian noise with standard deviations 0.05 and 0.10, followed by clipping to $[0,1]$. Each image's noise was fixed using seed $2223+\text{image ID}$. Rotation 10 and 25 denote fixed angles of $10^\circ$ and $25^\circ$, with bilinear interpolation, black fill and unchanged image dimensions. Blur 0.5 and 1.0 denote Gaussian standard deviations of 0.5 and 1.0 pixels, using a $5\times5$ kernel.
 
 \begin{table}[htbp]\centering\small
 \caption{Validation accuracy (\%) on clean and corrupted images.}
@@ -173,4 +189,7 @@ ResNet-18 gained 0.98 clean validation points over Original for 2.72 times the t
 
 Augmented's validation loss was still falling at epoch 20, so a longer budget could change the ranking. We used one seed on one laptop GPU. The two baseline runs reached the same validation accuracy, but their training times differed by about 4\%. Training ResNet-18 with crop and flip would let us compare architectures under the same augmentation.
 
+\section{Usage of AI tools}
+We used AI tools to better understand the topics of the lab and to get help in debugging the code we had developed whenever there was errors.
+Moreover, we used it also to draft the final report after the whole discussion and execution part was elaborated in the notebook.
 \end{document}
