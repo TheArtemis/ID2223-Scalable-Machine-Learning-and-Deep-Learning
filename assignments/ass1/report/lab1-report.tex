@@ -17,7 +17,9 @@
 \begin{document}
 \maketitle
 
-In this task we trained AlexNet and ResNet-18 on CIFAR-10 and compared their accuracy, robustness and cost. We didn't attempt the optional challenges.
+In this lab we trained AlexNet and ResNet-18 on CIFAR-10 and compared their clean validation accuracy and computational cost. Robustness experiments used the original and augmented AlexNet checkpoints. We didn't attempt the optional challenges. The notebook identifies the libraries used through import statements in the relevant code blocks.
+
+This report summarizes the main findings and conclusions. More detailed discussions and answers to the individual assignment questions are provided in the notebook's Markdown blocks, alongside the corresponding code and results.
 
 \section{Task 1: Data preparation}
 Each image in the dataset is a $32\times32$ RGB photo with one label from ten classes, such as airplane, cat, truck or others. The training set has 50,000 images, 5,000 per class. 
@@ -74,7 +76,7 @@ l2 1e-3 & 6.98 & 18 & 84.30\% & 0.577 & 98.16\% & 6.34\\
 dropout 0.0 & 6.98 & 19 & 82.50\% & 1.266 & 100.00\% & 6.21\\
 dropout 0.25 & 6.98 & 19 & 84.32\% & 0.968 & 99.98\% & 6.22\\
 \bottomrule\end{tabular}\end{table}
-At half width, training took 4.06 minutes and validation accuracy fell to 81.82\%. At 1.5 times the baseline width, accuracy rose by 0.72 points for about four extra minutes. At their selected checkpoints, all seven models classified at least 98.93\% of the clean training images correctly. Their training accuracy exceeded validation accuracy by 14.84 to 17.50 points. Even the narrow model fit the training data well.
+At half width, training took 4.06 minutes and validation accuracy fell to 81.82\%. At 1.5 times the baseline width, accuracy rose by 0.72 points for about four extra minutes. At their selected checkpoints, all seven models classified at least 98.93\% of the clean training images correctly. Their training accuracy exceeded validation accuracy by 14.84 to 17.50 points. Even the narrow model fit the training data well. These gaps indicate overfitting rather than clear capacity underfitting. Falling training loss with rising validation loss suggests a generalization limitation, although the 20-epoch budget does not establish convergence.
 
 The baseline validation loss was lowest at epoch 11 and rose as training loss continued to fall. At the selected checkpoints, weight decay of 0.0001 lowered validation loss from 0.886 to 0.831 but also lowered accuracy from 84.10\% to 83.72\%. Weight decay of 0.001 gave the lowest validation loss (0.577). At epoch 20, this model reached 98.6\% training accuracy and 0.594 validation loss. At the same epoch, the model without dropout reached 100\% training accuracy and 1.267 validation loss.
 
@@ -83,7 +85,11 @@ Dropout of 0.25 classified 11 more validation images correctly than dropout of 0
 \begin{figure}[!htbp]\centering\includegraphics[width=0.93\linewidth]{task3_learning_curves.png}\caption{AlexNet training and validation loss (left) and accuracy (right) over 20 epochs. Each row changes one setting: width, weight decay or dropout. Solid lines show training and dashed lines show validation.}\end{figure}
 \clearpage
 \section{Task 4: Augmentation and robustness}
-We trained Augmented with random 32 by 32 crops after four pixels of reflection padding, and horizontal flips with probability 0.5. A crop can shift an object within the frame, and a horizontal flip preserves its CIFAR-10 class. Both networks saw the same 5,000 validation images under each condition. Gaussian noise was fixed per image. Rotation used bilinear interpolation and black fill, and Gaussian blur used a 5 by 5 kernel. Noise, rotation and blur were applied separately before normalization.
+Original and Augmented refer to two AlexNet training conditions throughout Tasks 4--6. Original is the Task 2 baseline without augmentation. Augmented was trained from scratch with the same architecture, split, seed, optimizer and 20-epoch budget, adding random crops and horizontal flips. ResNet-18 was evaluated on clean images and benchmarked for cost; corruption and adversarial experiments used only the two AlexNet checkpoints.
+
+We trained Augmented with random $32\times32$ crops after four pixels of reflection padding, and horizontal flips with probability 0.5. A crop can shift an object within the frame, and a horizontal flip preserves its CIFAR-10 class. Both AlexNet checkpoints saw the same 5,000 validation images under each evaluation condition.
+
+Corruptions were applied separately before normalization, to pixels scaled to $[0,1]$. Noise 0.05 and 0.10 denote additive zero-mean Gaussian noise with standard deviations 0.05 and 0.10, followed by clipping to $[0,1]$. Each image's noise was fixed using seed $2223+\text{image ID}$. Rotation 10 and 25 denote fixed angles of $10^\circ$ and $25^\circ$, with bilinear interpolation, black fill and unchanged image dimensions. Blur 0.5 and 1.0 denote Gaussian standard deviations of 0.5 and 1.0 pixels, using a $5\times5$ kernel.
 
 \begin{table}[htbp]\centering\small
 \caption{Validation accuracy (\%) on clean and corrupted images.}
@@ -111,15 +117,15 @@ Original trained in 6.44 minutes and Augmented in 8.23 minutes on the same GPU. 
 \section{Task 5: Predictions and adversarial examples}
 Original reached 84.10\% clean accuracy and Augmented reached 87.36\%. Their validation losses were 0.886 and 0.376. The least-recalled class for Original was cat (69.00\%). For example, it classified image 39 as deer with almost 100\% confidence.
 
-\begin{figure}[htbp]\centering\includegraphics[width=0.75\linewidth]{prediction_examples_1.png}\caption{Original on its four lowest-recall classes. The top row shows correct predictions and the bottom row errors.}\end{figure}
+\begin{figure}[!htbp]\centering\includegraphics[width=0.6\linewidth]{prediction_examples_1.png}\caption{Original on its four lowest-recall classes. The top row shows correct predictions and the bottom row errors.}\end{figure}
 On clean inputs, the gap between training and validation accuracy was 15.88 points for Original and 5.52 for Augmented. Training accuracy in this check uses the saved weights with dropout off. The learning curves use training-mode accuracy during optimization.
 
 ResNet-18 reached 85.08\% validation accuracy, with a loss of 0.720 and a macro F1 of 0.851. Its accuracy on clean training images was 100\%, giving a 14.92-point gap to validation. This suggests overfitting. Cat had the lowest recall at 72\%, and cats and dogs were often confused.
 
 Original had its lowest validation loss at epoch 11 and ended at 0.886. For Augmented the validation loss went from 0.407 at epoch 15 to 0.376 at epoch 20.
 
-\begin{figure}[htbp]\centering\includegraphics[width=0.9\linewidth]{learning_curves_1.png}\caption{Training and validation curves for Original and Augmented.}\end{figure}
-FGSM used each model's own gradient on the first 256 validation images. We added 4/255 times the sign of the gradient to each pixel and clipped to [0,1]. The largest change was 0.0156863. Random signs of the same size caused far fewer errors. The success rate counts only images classified correctly before the attack.
+\begin{figure}[!htbp]\centering\includegraphics[width=0.75\linewidth]{learning_curves_1.png}\caption{Training and validation curves for Original and Augmented.}\end{figure}
+FGSM used each of the two AlexNet checkpoints' own gradients on the first 256 validation images. We added 4/255 times the sign of the gradient to each pixel and clipped to [0,1]. The largest change was 0.0156863. Random signs of the same size caused far fewer errors. The success rate counts only images classified correctly before the attack.
 
 \begin{table}[htbp]\centering\small
 \caption{Clean, random-sign and adversarial accuracy on the same subset.}
@@ -130,7 +136,7 @@ Model & Clean & Random & FGSM & Successful attacks\\
 Original & 85.55\% & 86.33\% & 26.56\% & 151/219 (68.95\%)\\
 Augmented & 91.80\% & 91.02\% & 25.78\% & 169/235 (71.91\%)\\
 \bottomrule\end{tabular}\end{table}
-\begin{figure}[htbp]\centering\includegraphics[width=0.8\linewidth]{fgsm_examples_1.png}\caption{First successful attack on Original. The last panel amplifies the pixel change.}\end{figure}
+\begin{figure}[!htbp]\centering\includegraphics[width=0.7\linewidth]{fgsm_examples_1.png}\caption{First successful attack on Original. The last panel amplifies the pixel change.}\end{figure}
 On initially correct predictions the attack succeeded more often against Augmented (71.91\%) than Original (68.95\%). Crop-and-flip training improved clean validation accuracy, but gave no FGSM advantage on this subset. The first 256 validation images are a small, unstratified sample.
 
 \section{Task 6: Cost and model choice}
